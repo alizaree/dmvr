@@ -102,15 +102,7 @@ def extract_frames(video_path: str,
       .filter("scale", new_width, -1)
       .output("pipe:", format="image2pipe")
   )
-  jpeg_bytes, _ = cmd.run(capture_stdout=True, capture_stderr=True)
-  '''
-  try:
-    jpeg_bytes, e2 = cmd.run(capture_stdout=True, capture_stderr=True)
-  except ffmpeg.Error as e:
-    print('stdout:', e.stdout.decode('utf8'))
-    print('stderr:', e.stderr.decode('utf8'))
-    raise e
-  '''
+  jpeg_bytes, _ = cmd.run(capture_stdout=True, capture_stderr=True, quiet=True)
   jpeg_bytes = jpeg_bytes.split(_JPEG_HEADER)[1:]
   jpeg_bytes = map(lambda x: _JPEG_HEADER + x, jpeg_bytes)
   return list(jpeg_bytes)
@@ -140,8 +132,6 @@ def generate_sequence_example(video_path: str,
   """Generate a sequence example."""
   if FLAGS.video_root_path:
     video_path = os.path.join(FLAGS.video_root_path, video_path)
-  #print("video_path: ", video_path)
-
   imgs_encoded = extract_frames(video_path, start, end)
 
   # Initiate the sequence example.
@@ -196,22 +186,18 @@ def main(argv):
     input_csv = input_csv.sample(frac=1)
   with _close_on_exit(writers) as writers:
     for i in range(len(input_csv)):
-      try:
-          print(
-              "Processing example %d of %d   (%d%%) \r" %
-              (i, len(input_csv), i * 100 / len(input_csv)),
-              end="")
-          v = input_csv["video_path"].values[i]
-          s = input_csv["start"].values[i]
-          e = input_csv["end"].values[i]
-          l = input_csv["label"].values[i] if "label" in input_csv else None
-          c = input_csv["caption"].values[i] if "caption" in input_csv else None
-          seq_ex = generate_sequence_example(
-              v, s, e, label_name=l, caption=c, label_map=l_map)
-          writers[i % len(writers)].write(seq_ex.SerializeToString())
-      except:
-          print( ' ERROR Encountered at File: ', l)
-          continue
+      print(
+          "Processing example %d of %d   (%d%%) \r" %
+          (i, len(input_csv), i * 100 / len(input_csv)),
+          end="")
+      v = input_csv["video_path"].values[i]
+      s = input_csv["start"].values[i]
+      e = input_csv["end"].values[i]
+      l = input_csv["label"].values[i] if "label" in input_csv else None
+      c = input_csv["caption"].values[i] if "caption" in input_csv else None
+      seq_ex = generate_sequence_example(
+          v, s, e, label_name=l, caption=c, label_map=l_map)
+      writers[i % len(writers)].write(seq_ex.SerializeToString())
 
 
 if __name__ == "__main__":

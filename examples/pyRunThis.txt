@@ -1,0 +1,17 @@
+generate_from_file.py \
+--csv_path=/dvmm-filer2/users/ali/Data/K_400/dummyTF/CSV_30_.csv \
+--output_path=/dvmm-filer2/users/ali/Data/K_400/dummyTF/generated_dataset
+
+
+---
+
+python generate_hmdb_csv.py \
+  --input_path=/dvmm-filer3a/users/ali/Data/testTrainMulti_7030_splits \
+  --output_path=/dvmm-filer3a/users/ali/Data/hmdb_csv
+  
+----
+
+python generate_from_file.py \
+  --csv_path=/dvmm-filer3a/users/ali/Data/hmdb_csv/train_1.csv \
+  --video_root_path=/dvmm-filer3a/users/ali/Data/hmdb_videos \
+  --output_path=/dvmm-filer3a/users/ali/Data/hmdb_shards
